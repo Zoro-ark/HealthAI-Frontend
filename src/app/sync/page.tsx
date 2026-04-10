@@ -33,7 +33,7 @@ function SyncContent() {
           body: JSON.stringify({
             clerkId: user.id,
             email: user.emailAddresses[0]?.emailAddress,
-            name: user.fullName,
+            name: user.fullName || user.firstName || user.emailAddresses[0]?.emailAddress?.split('@')[0] || 'Unknown User',
             role: requestedRole, // Use the role selected in the UI
           }),
         });
@@ -58,11 +58,14 @@ function SyncContent() {
             }
           }
         } else {
-          // fallback
+          const errData = await res.json().catch(() => ({ message: 'Unknown error' }));
+          console.error('AddUser failed:', res.status, errData);
+          alert(`Failed to sync account: ${errData.message}. Please show this error to the developer!`);
           window.location.href = '/verification';
         }
-      } catch (err) {
-        console.error('Failed to sync user', err);
+      } catch (err: any) {
+        console.error('Failed to sync user completely:', err);
+        alert(`Network error syncing account: ${err.message}`);
         window.location.href = '/verification'; // fallback
       }
     };
