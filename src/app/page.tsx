@@ -1,13 +1,9 @@
-'use client';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Home from '@/Components/Home/Home';
-import {useUser} from '@clerk/nextjs';
+import Home from "@/Components/Home/Home";
 
-export default function HomePage() {
+export default function Page() {
   return (
-    <>
+    <main>
       <Home />
-    </>
+    </main>
   );
 }

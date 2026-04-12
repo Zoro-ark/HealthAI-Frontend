@@ -1,90 +1,133 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  --color-brand-blue: #2563eb;
+  --color-brand-teal: #0d9488;
+  --color-brand-orange: #f97316;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-@theme {
-  --color-vibrant-blue: #2563eb; /* Tailwind blue-600 */
-  --color-vibrant-orange: #f97316; /* Tailwind orange-500 */
+/* --- Premium Utilities --- */
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+}
 
-/* Utility: gradient text for brand marks */
-.gradient-text {
-  background-image: linear-gradient(90deg, var(--color-vibrant-blue), #14b8a6 60%, var(--color-vibrant-orange));
-  -webkit-background-clip: text;
+.text-gradient {
   background-clip: text;
-  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, #2563eb, #0d9488);
 }
 
-/* Subtle animated blobs for decorative backgrounds */
+/* Custom react-calendar styling */
+.react-calendar {
+  width: 100% !important;
+  background: white !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.react-calendar__tile--active {
+  background: #2563eb !important;
+  border-radius: 12px !important;
+}
+
+.react-calendar__tile--now {
+  background: #eff6ff !important;
+  border-radius: 12px !important;
+  color: #2563eb !important;
+  font-weight: bold !important;
+}
+
+/* Perforated Ticket Edge */
+.ticket-border {
+  background-image: radial-gradient(circle at 0% 50%, transparent 10px, white 10px),
+    radial-gradient(circle at 100% 50%, transparent 10px, white 10px);
+  background-size: 100% 100%;
+}
+
+/* Subtle dot for calendar appointments */
+.has-appointment::after {
+  content: '';
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: #2563eb;
+  border-radius: 50%;
+}
+
+.react-calendar__tile--active {
+  background: #2563eb !important;
+  color: white !important;
+  border-radius: 12px !important;
+}
+
+.has-appointment {
+  position: relative;
+  font-weight: bold !important;
+  color: #2563eb !important;
+}
+
+.has-appointment::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: #f97316;
+  /* orange-500 */
+  border-radius: 50%;
+}
+
 @keyframes blob {
   0% {
     transform: translate(0px, 0px) scale(1);
   }
+
   33% {
-    transform: translate(20px, -30px) scale(1.05);
+    transform: translate(30px, -50px) scale(1.1);
   }
+
   66% {
-    transform: translate(-10px, 10px) scale(0.98);
+    transform: translate(-20px, 20px) scale(0.9);
   }
+
   100% {
     transform: translate(0px, 0px) scale(1);
   }
 }
 
 .animate-blob {
-  animation: blob 12s ease-in-out infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Horizontal marquee for Indian destinations */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.marquee-track {
-  animation: marquee 18s linear infinite;
-  will-change: transform;
-}
-
-/* Scrolling animation for destination cards */
-@keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.animate-scroll {
-  animation: scroll 30s linear infinite;
-  will-change: transform;
+  animation: blob 15s infinite alternate ease-in-out;
 }

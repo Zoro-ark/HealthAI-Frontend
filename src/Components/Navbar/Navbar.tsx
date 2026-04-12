@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   SignInButton,
@@ -11,136 +11,153 @@ import {
   UserButton,
   useUser,
 } from '@clerk/nextjs'
+import { Activity } from 'lucide-react'
+
+import { createClient } from '@/utils/supabase/client'
 
 export default function Navbar() {
   const router = useRouter()
-  const { user, isSignedIn } = useUser()
+  const pathname = usePathname()
+  const { user, isSignedIn, isLoaded } = useUser()
   const [role, setRole] = useState<string | null>(null)
-  const [activePath, setActivePath] = useState('');
+  const [synced, setSynced] = useState(false)
 
-  // Track current path
+  // Sync with Supabase on auth state change
   useEffect(() => {
-    setActivePath(window.location.pathname)
-  }, [])
-
-  // Example: Fetch custom role from backend (if Clerk user is linked to your DB)
-  useEffect(() => {
-    if (isSignedIn && user) {
-      const storedRole = localStorage.getItem('role')
-      setRole(storedRole || 'patient') // fallback
-    } else {
+    if (!isLoaded) return;
+    if (!isSignedIn || !user) {
       setRole(null)
+      localStorage.removeItem('role')
+      setSynced(false)
+      return;
     }
-  }, [isSignedIn, user])
 
+    if (synced) {
+        // Just maintain state if already synced in this session
+        const storedRole = localStorage.getItem('role');
+        if (storedRole) setRole(storedRole);
+        return;
+    }
+
+    const syncUser = async () => {
+      const supabase = createClient()
+      try {
+        const { data: existingUser, error: checkError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+
+        let currentRole = 'unknown'
+
+        if (checkError && checkError.code === 'PGRST116') {
+          // User not found, insert them
+          const { error: insertError } = await supabase.from('users').insert({
+            id: user.id,
+            email: user.emailAddresses[0]?.emailAddress || '',
+            full_name: user.fullName || "New User",
+            role: 'unknown'
+          })
+          if (insertError) throw insertError;
+        } else if (existingUser) {
+          currentRole = existingUser.role
+        }
+
+        setRole(currentRole)
+        localStorage.setItem('role', currentRole)
+        setSynced(true)
+
+        // Route protection for onboarding
+        if (currentRole === 'unknown' && !pathname.includes('/onboarding')) {
+           router.push('/onboarding')
+        }
+      } catch (err) {
+        console.error("Supabase sync error:", err)
+      }
+    }
+
+    syncUser()
+  }, [isSignedIn, user, isLoaded, synced, pathname, router])
 
   const linkClass = (path: string) =>
-        `transition-colors text-sm sm:text-base ${ // Adjusted text size
-          activePath === path
-            ? 'text-vibrant-blue font-semibold' // Make active link bold
-            : 'text-gray-700 hover:text-vibrant-orange'
-        }`
+    `transition-all font-bold text-sm px-4 py-2 rounded-xl flex items-center gap-2 ${ 
+      pathname === path
+        ? 'bg-blue-50 text-blue-700' 
+        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+    }`
 
-  const myrole='user';
-
-  const [synced, setSynced] = useState(false);
-  useEffect(() => {
-    if (!isSignedIn || !user || synced) return;
-
-    const createUser = async () => {
-      try {
-        const res = await fetch('http://localhost:5001/api/addUser', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            clerkId: user.id,
-            email: user.emailAddresses[0]?.emailAddress,
-            name: user.fullName,
-            role: myrole
-          }),
-        });
-
-        if (res.ok) console.log("User synced");
-        setSynced(true); // prevent multiple calls
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    createUser();
-  }, [user, isSignedIn, synced]);
-
-
-return (
-    <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-gray-200/70">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between"> {/* Adjusted height */}
-        <Link href="/" className="text-xl sm:text-2xl font-extrabold gradient-text"> {/* Adjusted text size */}
-          MedicoTourism
+  return (
+    <header className="sticky top-0 z-50 glass-nav">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        {/* Brand Logo */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="p-2 bg-blue-600 rounded-xl group-hover:scale-105 transition-transform shadow-lg shadow-blue-600/20">
+            <Activity className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-2xl font-black italic tracking-tighter">
+            <span className="text-slate-900">Medico</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Tourism</span>
+          </span>
         </Link>
 
         {/* Navigation links */}
-        <nav className="hidden sm:flex items-center gap-4 md:gap-6"> {/* Hide on small screens, adjust gap */}
-           {/* Add common links if any */}
-           {/* <Link href="/about" className={linkClass('/about')}>About</Link> */}
-
-          {/* Role-based AND SignedIn Check */}
+        <nav className="hidden md:flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl border border-slate-200/60 shadow-sm backdrop-blur-xl">
            <SignedIn>
-               {/* Link to Visits page for all signed-in users */}
-               <Link href="/visits" className={linkClass('/visits')}>
-                    My Visits
-               </Link>
-
-                {/* Existing role-specific links */}
-                {/* Conditionally render links based on the 'role' state */}
                 {role === 'patient' && (
-                    <>
-                        {/* Example: Add patient-specific links if needed, maybe profile handled by UserButton */}
-                        {/* <Link href="/profile" className={linkClass('/profile')}>Profile</Link> */}
-                     </>
+                   <>
+                     <Link href="/patient-dashboard" className={linkClass('/patient-dashboard')}>
+                          Dashboard
+                     </Link>
+                     <Link href="/patient-dashboard/new-visit" className={linkClass('/patient-dashboard/new-visit')}>
+                          New Visit
+                     </Link>
+                   </>
                 )}
+
                 {role === 'doctor' && (
                     <>
-                      <Link href="/doctor" className={linkClass('/doctor')}>
-                        Doctor Panel
+                      <Link href="/doc" className={linkClass('/doc')}>
+                        Doctor Portal
                       </Link>
                       <Link href="/reports" className={linkClass('/reports')}>
                         Reports
                       </Link>
                     </>
                 )}
+                
                 {role === 'admin' && (
                     <Link href="/admin" className={linkClass('/admin')}>
-                      Admin Dashboard
+                      Admin Panel
                     </Link>
                 )}
            </SignedIn>
-
         </nav>
 
         {/* Right side buttons */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
           <SignedOut>
-               {/* Using the Sign In/Up buttons provided by Clerk */}
-               <div className="flex gap-2 sm:gap-3">
+               <div className="flex items-center gap-3">
                  <SignInButton mode="redirect">
-                    <button className="bg-[#6c47ff] cursor-pointer text-white rounded-full font-medium text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 transition-transform hover:scale-105">
+                    <button className="text-sm font-bold text-slate-600 hover:text-slate-900 px-4 py-2 transition-colors">
                       Sign In
                     </button>
                  </SignInButton>
                  <SignUpButton mode="redirect">
-                     <button className="border border-[#6c47ff] cursor-pointer text-[#6c47ff] rounded-full font-medium text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 transition-transform hover:scale-105 bg-white hover:bg-purple-50">
-                       Sign Up
+                     <button className="bg-slate-900 text-white rounded-xl font-bold text-sm px-6 py-2.5 shadow-lg shadow-slate-900/10 transition-all hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-blue-600/20">
+                       Get Started
                      </button>
                  </SignUpButton>
                 </div>
           </SignedOut>
 
           <SignedIn>
-             {/* UserButton handles profile, sign out etc. */}
-            <UserButton afterSignOutUrl="/" />
+            <div className="p-1 rounded-full bg-slate-50 border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+              <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: "w-9 h-9" } }} />
+            </div>
           </SignedIn>
-           {/* Optional: Add a mobile menu button here for smaller screens */}
          </div>
+         
       </div>
     </header>
   )

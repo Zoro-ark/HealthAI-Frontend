@@ -1,4 +1,5 @@
-import Link  from 'next/link'
+'use client';
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 function Home() {
@@ -98,8 +99,8 @@ function Home() {
         </div>
       </section>
 
-     
-    
+
+
 
 
       {/* Features */}
@@ -111,15 +112,21 @@ function Home() {
           </div>
           <div className="mt-10 grid md:grid-cols-3 gap-6">
             {[
-              { title: 'Trusted Hospitals', desc: 'Partnered with NABH/JCI accredited specialists and facilities.', icon: (
-                <svg className="w-10 h-10 text-vibrant-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M9 8h6m2 12H7a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V18a2 2 0 01-2 2z" /></svg>
-              ) },
-              { title: 'End-to-end Planning', desc: 'From medical visas to recovery stays and travel logistics.', icon: (
-                <svg className="w-10 h-10 text-vibrant-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3 1.657 0 3-1.343 3-3 0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.364 6.364l-1.414-1.414M8.05 8.05L6.636 6.636m10.728 0l-1.414 1.414M8.05 15.95L6.636 17.364" /></svg>
-              ) },
-              { title: 'Recovery & Sightseeing', desc: 'Personalized, doctor-approved itineraries to recharge and explore.', icon: (
-                <svg className="w-10 h-10 text-vibrant-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7l6 6-6 6M21 7l-6 6 6 6" /></svg>
-              ) },
+              {
+                title: 'Trusted Hospitals', desc: 'Partnered with NABH/JCI accredited specialists and facilities.', icon: (
+                  <svg className="w-10 h-10 text-vibrant-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M9 8h6m2 12H7a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V18a2 2 0 01-2 2z" /></svg>
+                )
+              },
+              {
+                title: 'End-to-end Planning', desc: 'From medical visas to recovery stays and travel logistics.', icon: (
+                  <svg className="w-10 h-10 text-vibrant-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3 1.657 0 3-1.343 3-3 0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.364 6.364l-1.414-1.414M8.05 8.05L6.636 6.636m10.728 0l-1.414 1.414M8.05 15.95L6.636 17.364" /></svg>
+                )
+              },
+              {
+                title: 'Recovery & Sightseeing', desc: 'Personalized, doctor-approved itineraries to recharge and explore.', icon: (
+                  <svg className="w-10 h-10 text-vibrant-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7l6 6-6 6M21 7l-6 6 6 6" /></svg>
+                )
+              },
             ].map(card => (
               <div key={card.title} className="p-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="mb-4">{card.icon}</div>
