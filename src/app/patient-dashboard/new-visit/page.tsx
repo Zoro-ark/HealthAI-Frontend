@@ -36,8 +36,7 @@ const INDIAN_CITIES = [
 
 export default function NewVisitPage() {
   const router = useRouter();
-  // const { user } = useUser();
-  const user = { id: 'dummy-patient-id', fullName: 'Test Patient' };
+  const { user } = useUser();
   
   // UI State
   const [dragActive, setDragActive] = useState(false);
@@ -185,9 +184,9 @@ export default function NewVisitPage() {
       // Success
       router.push('/patient-dashboard');
       
-    } catch (err: any) {
+    } catch (err: unknown) {
        console.error("Submission error:", err);
-       alert("An error occurred during submission: " + (err.message || 'Unknown error'));
+       alert("An error occurred during submission: " + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
        setSubmitting(false);
     }
@@ -453,7 +452,7 @@ export default function NewVisitPage() {
                             })
                           ) : (
                             <div className="px-3 py-4 text-center text-sm text-slate-500">
-                              No cities found matching "{citySearch}"
+                              No cities found matching &quot;{citySearch}&quot;
                             </div>
                           )}
                         </div>

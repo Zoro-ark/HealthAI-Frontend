@@ -70,9 +70,8 @@ type AppointmentRow = {
 };
 
 export default function DashboardClient() {
-  // const { user, isLoaded } = useUser();
-  const user = { id: 'dummy-patient-id', fullName: 'Test Patient' };
-  const isLoaded = true;
+  const { user, isLoaded } = useUser();
+  const patientId = user?.id;
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +83,7 @@ export default function DashboardClient() {
   useEffect(() => {
     async function loadRequests() {
       if (!isLoaded) return;
-      if (!user) {
+      if (!patientId) {
         setLoading(false);
         return;
       }
@@ -96,17 +95,17 @@ export default function DashboardClient() {
           supabase
             .from('medical_requests')
             .select('*')
-            .eq('patient_id', user.id)
+            .eq('patient_id', patientId)
             .order('created_at', { ascending: false }),
           supabase
             .from('treatment_itineraries')
             .select('*')
-            .eq('patient_id', user.id)
+            .eq('patient_id', patientId)
             .order('created_at', { ascending: false }),
           supabase
             .from('appointments')
             .select('*')
-            .eq('patient_id', user.id)
+            .eq('patient_id', patientId)
             .order('appointment_date', { ascending: false }),
         ]);
 
@@ -157,7 +156,7 @@ export default function DashboardClient() {
     }
 
     loadRequests();
-  }, [isLoaded, user]);
+  }, [isLoaded, patientId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -199,13 +198,13 @@ export default function DashboardClient() {
   };
 
   const requestMeeting = async () => {
-    if (!selectedVisit || !user || !meetingDate) return;
+    if (!selectedVisit || !patientId || !meetingDate) return;
     setActionMessage('');
     const response = await fetch('/api/patient/request-meeting', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        patientId: user.id,
+        patientId,
         itineraryId: selectedVisit.id,
         appointmentDate: meetingDate,
         doctorId: DUMMY_DOCTOR_ID,
@@ -226,14 +225,14 @@ export default function DashboardClient() {
   };
 
   const submitFeedback = async () => {
-    if (!selectedVisit || !user || !feedback.trim()) return;
+    if (!selectedVisit || !patientId || !feedback.trim()) return;
     setActionMessage('');
     const response = await fetch('/api/patient/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         appointmentId: selectedVisit.appointmentId,
-        patientId: user.id,
+        patientId,
         doctorId: DUMMY_DOCTOR_ID,
         rating,
         feedback,
