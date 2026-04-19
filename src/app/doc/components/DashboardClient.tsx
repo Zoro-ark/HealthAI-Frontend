@@ -4,15 +4,16 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, Clock, UserPlus, MoreVertical,
-  Stethoscope, Activity, ArrowRight, CheckCircle2, XCircle, ShieldAlert, ShieldCheck, Clock3
+  Stethoscope, Activity, CheckCircle2, XCircle, ShieldAlert, ShieldCheck, Clock3
 } from 'lucide-react';
 import AppointmentCalendar from './AppointmentCalendar';
 
 type Appointment = {
   id: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'pending_doctor' | 'pending_patient' | 'scheduled' | 'completed' | 'cancelled' | string;
   appointment_date: string;
   notes: string;
+  created_by?: string;
   patients: { id: string; name: string; age: number; gender: string; };
 };
 
@@ -23,6 +24,7 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
 
   useEffect(() => setMounted(true), []);
 
+  const pendingApprovals = appointments.filter(a => ['pending_doctor', 'pending_patient'].includes(a.status));
   const pending = appointments.filter(a => a.status === 'scheduled');
   const past = appointments.filter(a => ['completed', 'cancelled'].includes(a.status));
   const currentList = activeTab === 'pending' ? pending : past;
@@ -69,7 +71,7 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
               Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 pb-1">Doctor</span>
             </h1>
             <p className="text-slate-500 font-medium text-lg pt-1">
-              You have <strong className="text-slate-800">{pending.length} sessions</strong> scheduled for today.
+              You have <strong className="text-slate-800">{pending.length} scheduled sessions</strong> and <strong className="text-slate-800">{pendingApprovals.length} approvals</strong> waiting.
             </p>
           </div>
 
@@ -97,6 +99,32 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
 
         </div>
 
+        {pendingApprovals.length > 0 && (
+          <div className="mb-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-amber-700">Meeting Approvals</h2>
+              <span className="text-xs font-bold text-slate-500">{pendingApprovals.length} pending</span>
+            </div>
+            {pendingApprovals.map((app) => (
+              <div key={app.id} className="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <p className="text-lg font-bold text-slate-900">{app.patients?.name || 'Unknown Patient'}</p>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {app.status === 'pending_doctor' ? 'Patient requested' : 'Doctor proposed'} meeting for{' '}
+                    {mounted ? new Date(app.appointment_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : app.appointment_date}
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push(`/virtual-clinic/${app.patients.id}`)}
+                  className="px-6 py-3 rounded-2xl bg-amber-500 text-white font-bold hover:bg-amber-400 transition-colors"
+                >
+                  Review Request
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Appointment List Grid */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -110,7 +138,7 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
             {currentList.length === 0 ? (
               <div className="bg-white border text-center border-slate-200 rounded-3xl p-16 md:p-32 shadow-sm">
                 <CheckCircle2 className="w-16 h-16 text-slate-300 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">You're all caught up!</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">You&apos;re all caught up!</h3>
                 <p className="text-slate-500 text-lg">No {activeTab} appointments to show here.</p>
               </div>
             ) : (

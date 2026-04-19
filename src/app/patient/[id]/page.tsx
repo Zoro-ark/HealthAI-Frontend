@@ -36,7 +36,7 @@ export default async function PatientPage({
 
   // 3. Fetch patient documents
   const { data: documents } = await supabase
-    .from('patient_documents')
+    .from('patient_docs')
     .select('*')
     .eq('patient_id', id)
     .order('created_at', { ascending: false })
@@ -48,7 +48,7 @@ export default async function PatientPage({
            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
            <h1 className="text-2xl font-bold mb-2">Patient Not Found</h1>
            <p className="text-slate-600 mb-6 font-sans">
-             We couldn't locate this patient record in the database.
+             We couldn&apos;t locate this patient record in the database.
            </p>
         </div>
       </div>

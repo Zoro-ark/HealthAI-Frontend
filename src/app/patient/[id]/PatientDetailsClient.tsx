@@ -26,7 +26,7 @@ type Appointment = {
 type Document = {
   id: string;
   name: string;
-  size: string;
+  size: string | number;
   created_at: string;
   url?: string;
 };
@@ -46,7 +46,7 @@ export default function PatientDetailsClient({
 
   // Compute "Disease/Condition" from the most recent clinical notes if available, else generic.
   const latestNotes = appointments.find(a => a.notes)?.notes || "Routine Health Maintenance";
-  const nextSession = appointments.find(a => a.status === 'scheduled');
+  const nextSession = appointments.find(a => ['scheduled', 'pending_doctor', 'pending_patient'].includes(a.status));
 
   return (
     <div style={{ backgroundColor: '#f8fafc', color: '#0f172a' }} className="relative min-h-screen font-sans pb-32">

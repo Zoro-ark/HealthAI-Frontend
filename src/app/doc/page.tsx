@@ -3,11 +3,24 @@ import { cookies } from 'next/headers'
 import DashboardClient from './components/DashboardClient'
 import { AlertCircle } from 'lucide-react'
 import { currentUser } from '@clerk/nextjs/server'
-
-// Hardcoded Dummy Doctor ID mapped to our SQL insertion script
-const DUMMY_DOCTOR_ID = '11111111-1111-1111-1111-111111111111'
+import { DUMMY_DOCTOR_ID } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
+
+type DashboardAppointment = {
+  id: string
+  status: string
+  appointment_date: string
+  notes: string
+  created_by?: string
+  patients: {
+    id: string
+    name: string
+    age: number
+    gender: string
+    contact_info?: string
+  }
+}
 
 export default async function DocPage() {
   const cookieStore = await cookies()
@@ -32,6 +45,7 @@ export default async function DocPage() {
       status,
       appointment_date,
       notes,
+      created_by,
       patients (
         id,
         name,
@@ -60,5 +74,10 @@ export default async function DocPage() {
     )
   }
 
-  return <DashboardClient appointments={appointments as any[]} verificationStatus={verificationStatus} />
+  return (
+    <DashboardClient
+      appointments={(appointments || []) as DashboardAppointment[]}
+      verificationStatus={verificationStatus}
+    />
+  )
 }
