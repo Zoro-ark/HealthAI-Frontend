@@ -70,7 +70,9 @@ type AppointmentRow = {
 };
 
 export default function DashboardClient() {
-  const { user, isLoaded } = useUser();
+  // const { user, isLoaded } = useUser();
+  const user = { id: 'dummy-patient-id', fullName: 'Test Patient' };
+  const isLoaded = true;
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);

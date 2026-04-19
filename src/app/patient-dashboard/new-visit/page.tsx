@@ -36,7 +36,8 @@ const INDIAN_CITIES = [
 
 export default function NewVisitPage() {
   const router = useRouter();
-  const { user } = useUser();
+  // const { user } = useUser();
+  const user = { id: 'dummy-patient-id', fullName: 'Test Patient' };
   
   // UI State
   const [dragActive, setDragActive] = useState(false);
