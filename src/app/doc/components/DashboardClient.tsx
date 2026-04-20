@@ -54,12 +54,7 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
                     <Clock3 className="w-4 h-4" /> Pending Verification
                   </button>
                )}
-               {verificationStatus === 'rejected' && (
-                  <button onClick={() => router.push('/doctor-details')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold tracking-widest uppercase border border-red-200 shadow-sm transition-colors cursor-pointer outline-none">
-                    <ShieldAlert className="w-4 h-4" /> Verification Rejected
-                  </button>
-               )}
-               {verificationStatus === 'none' && (
+               {['none', 'rejected'].includes(verificationStatus) && (
                   <button onClick={() => router.push('/doctor-details')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold tracking-widest uppercase border border-slate-900 shadow-sm transition-colors cursor-pointer outline-none">
                     <ShieldAlert className="w-4 h-4 text-amber-400" /> Action Required: Verify Account
                   </button>

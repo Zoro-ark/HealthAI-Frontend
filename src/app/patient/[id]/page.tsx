@@ -36,7 +36,7 @@ export default async function PatientPage({
 
   // 3. Fetch patient documents
   const { data: documents } = await supabase
-    .from('patient_documents')
+    .from('patient_docs')
     .select('*')
     .eq('patient_id', id)
     .order('created_at', { ascending: false })

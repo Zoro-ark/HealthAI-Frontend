@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
 
 export async function POST(req: Request) {
   try {
@@ -36,12 +32,22 @@ export async function POST(req: Request) {
       Do not include markdown blocks or any other text outside the JSON array.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
     });
 
-    const responseText = response.text || '';
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Gemini API Error JSON:", errorData);
+      throw new Error(`Google API responded with status ${response.status}: ${errorData}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
     // Attempt to extract JSON if the model returns it with markdown codeblocks
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
@@ -63,7 +69,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error('Error generating suggestions with Gemini:', error);
     return NextResponse.json(
-      { error: 'Failed to generate suggestions. Please ensure your API key is correct and valid.' },
+      { error: String(error) || 'Unknown error' },
       { status: 500 }
     );
   }

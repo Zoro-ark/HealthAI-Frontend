@@ -20,7 +20,7 @@ export default function OnboardingClient() {
             const { error } = await supabase
                 .from('users')
                 .update({ role })
-                .eq('id', user.id);
+                .eq('clerk_id', user.id);
 
             if (error) throw error;
 

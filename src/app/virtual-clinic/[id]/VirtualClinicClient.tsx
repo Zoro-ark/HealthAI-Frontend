@@ -33,24 +33,26 @@ type Document = {
 export default function VirtualClinicClient({
   patient,
   appointments,
-  documents
+  documents,
+  medicalRequests
 }: {
   patient: Patient,
   appointments: Appointment[],
-  documents: Document[]
+  documents: Document[],
+  medicalRequests: any[]
 }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   // States for Notes and Comments
   const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [clinicalNotes, setClinicalNotes] = useState(
-    "Patient presents with a history of recurrent cough and mild chest discomfort over the past 3 weeks.\n\n" +
-    "Vital signs are stable. Temp: 98.6°F, HR: 78, BP: 120/80, RR: 16.\n\n" +
-    "Chest X-ray from 2 days ago shows mild infiltrates in the right lower lobe, suspicious for early-stage pneumonia.\n\n" +
-    "Recommended course of action: Start on Amoxicillin 500mg TID for 7 days. Follow up in 1 week. If symptoms worsen, patient advised to visit the ER immediately.\n\n" +
-    "Added Notes: Patient has a known allergy to Penicillin, switching recommendation to Doxycycline 100mg BID."
-  );
+  const [clinicalNotes, setClinicalNotes] = useState(() => {
+    if (medicalRequests && medicalRequests.length > 0) {
+      const latestRequest = medicalRequests[0];
+      return `Patient presented with the following recorded symptoms:\n"${latestRequest.symptoms}"\n\nClinical Assessment:`
+    }
+    return "";
+  });
 
   const [doctorComments, setDoctorComments] = useState('');
 
