@@ -97,15 +97,48 @@ Include treatment, accommodation/travel flow, and day-wise cost items.
 Do not wrap the JSON in markdown.
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: prompt,
-  });
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+        });
 
-  const rawText = response.text || '';
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText) as { plans?: GeneratedPlan[] };
-  return safeJsonArray(parsed.plans, []);
+        const rawText = response.text || '';
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText) as { plans?: GeneratedPlan[] };
+        return safeJsonArray(parsed.plans, []);
+      } catch (err: unknown) {
+        const errStr = String(err);
+        if (errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE')) {
+          // Wait before retry
+          await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+          continue;
+        }
+        throw err; // Non-retryable
+      }
+    }
+  }
+  
+  // All retries exhausted — return a manual review placeholder
+  return [
+    {
+      title: 'Manual Review Required',
+      city: input.destinations[0] || 'Preferred destination',
+      hospital: 'To be determined by reviewing physician',
+      treatmentPlan: `AI itinerary generation is temporarily unavailable. Based on the clinical summary, please manually create a treatment plan for: ${input.summary.substring(0, 200)}...`,
+      stay: '5-7 days (estimated)',
+      estimatedTotalCost: input.budgetRange || 'TBD',
+      dailyCostBreakdown: [
+        { day: 1, label: 'Initial consultation and diagnostics', cost: 'TBD' },
+        { day: 2, label: 'Treatment planning', cost: 'TBD' },
+        { day: 3, label: 'Procedure / therapy', cost: 'TBD' },
+      ],
+    },
+  ];
 }
 
 export async function POST(request: Request) {
