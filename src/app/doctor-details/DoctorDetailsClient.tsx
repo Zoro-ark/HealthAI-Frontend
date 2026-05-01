@@ -54,22 +54,29 @@ export default function DoctorDetailsClient() {
     }
 
     const checkStatus = async () => {
-      const email = user.emailAddresses[0]?.emailAddress;
-      if (!email) {
-         setCurrentStatus('none');
-         return;
-      }
       try {
+        const { data: dbUser, error: userError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('clerk_id', user.id)
+          .single();
+
+        if (userError || !dbUser) {
+           setCurrentStatus('none');
+           return;
+        }
+
         const { data, error } = await supabase
           .from('doctor_verifications')
           .select('status')
-          .eq('email', email)
-          .single();
+          .eq('user_id', dbUser.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
 
-        if (error || !data) {
+        if (error || !data || data.length === 0) {
           setCurrentStatus('none');
         } else {
-          setCurrentStatus(data.status as 'pending' | 'verified' | 'rejected');
+          setCurrentStatus(data[0].status as 'pending' | 'verified' | 'rejected');
         }
       } catch {
         setCurrentStatus('none');
@@ -120,10 +127,22 @@ export default function DoctorDetailsClient() {
         }
       }
 
+      // 1.5 Fetch Database UUID for user
+      const { data: dbUser, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', user.id)
+        .single();
+      
+      if (userError || !dbUser) {
+        throw new Error("Could not find matching database user. Are you signed in?");
+      }
+
       // 2. Insert record into doctor_verifications table
       const { error: insertError } = await supabase
         .from('doctor_verifications')
         .insert({
+          user_id: dbUser.id,
           full_name: formData.fullName,
           email: formData.email,
           phone: formData.phone,

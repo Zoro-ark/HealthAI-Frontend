@@ -35,14 +35,36 @@ export default async function DocPage() {
   const user = await currentUser()
   const email = user?.emailAddresses[0]?.emailAddress || ''
 
-  // Fetch verification status
-  const { data: verification } = await supabase
-    .from('doctor_verifications')
-    .select('status')
-    .eq('email', email)
-    .single()
+  // Fetch verification status using user_id mapped from Clerk user
+  const { data: dbUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('clerk_id', user?.id || '')
+    .maybeSingle()
 
-  const verificationStatus = verification?.status || 'none'
+  let verificationStatus = 'none'
+  let realDoctorId = DUMMY_DOCTOR_ID
+
+  if (dbUser) {
+      const { data: verifications } = await supabase
+        .from('doctor_verifications')
+        .select('status')
+        .eq('user_id', dbUser.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      verificationStatus = verifications?.[0]?.status || 'none'
+
+      const { data: doctorRec } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', dbUser.id)
+        .maybeSingle()
+
+      if (doctorRec) {
+          realDoctorId = doctorRec.id
+      }
+  }
 
   // Fetch appointments, joining the patients table
   const { data: appointments, error } = await supabase
@@ -61,7 +83,7 @@ export default async function DocPage() {
         contact_info
       )
     `)
-    .eq('doctor_id', DUMMY_DOCTOR_ID)
+    .eq('doctor_id', realDoctorId)
     .order('appointment_date', { ascending: true })
 
   if (error || !appointments) {

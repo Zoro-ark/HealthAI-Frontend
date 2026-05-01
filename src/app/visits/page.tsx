@@ -35,6 +35,7 @@ export default function VisitsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [assignedDoctor, setAssignedDoctor] = useState<string | null>(null);
 
   useEffect(() => {
     const checkStatusAndFetchVisits = async () => {
@@ -69,8 +70,9 @@ export default function VisitsPage() {
                  return; // Stop further execution
             }
              setIsVerified(true);
-
-
+             if (statusData.assignedDoctorName) {
+                 setAssignedDoctor(statusData.assignedDoctorName);
+             }
        
             const visitsRes = await fetch('http://localhost:5001/api/visits', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -129,13 +131,25 @@ export default function VisitsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-white-900">Your Visits</h1>
+        <h1 className="text-3xl font-bold text-gray-900 border-l-4 border-indigo-500 pl-4 py-1">Your Patient Portal</h1>
         <Link href="/visits/new">
-          <button className="px-5 py-2 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700 transition shadow">
+          <button className="px-5 py-2 bg-indigo-600 text-white rounded-md font-semibold hover:bg-indigo-700 transition shadow">
             + Request New Visit
           </button>
         </Link>
       </div>
+
+      {assignedDoctor && (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-8 flex items-center gap-4">
+          <div className="w-14 h-14 bg-white text-indigo-700 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-indigo-100">
+            {assignedDoctor.split(' ')[1]?.[0] || 'D'}
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-1">Your Assigned Care Provider</h3>
+            <p className="text-indigo-900 font-semibold text-xl">{assignedDoctor}</p>
+          </div>
+        </div>
+      )}
 
       {visits.length === 0 ? (
         <p className="text-gray-600">You haven&apos;t requested any visits yet.</p>
