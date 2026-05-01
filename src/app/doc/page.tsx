@@ -85,6 +85,12 @@ export default async function DocPage() {
     .eq('doctor_id', realDoctorId)
     .order('appointment_date', { ascending: true })
 
+  // Also fetch patients directly assigned via admin panel
+  const { data: assignedPatients } = await supabase
+    .from('patients')
+    .select('id, name, age, gender, contact_info')
+    .or(`assigned_doctor_id.eq.${realDoctorId},assigned_doctor_id.eq.${dbUser?.id || 'none'}`)
+
   if (error || !appointments) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-6">
@@ -114,6 +120,7 @@ export default async function DocPage() {
   return (
     <DashboardClient
       appointments={normalizedAppointments}
+      assignedPatients={assignedPatients || []}
       verificationStatus={verificationStatus}
     />
   )

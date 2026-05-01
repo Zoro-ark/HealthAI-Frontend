@@ -17,7 +17,15 @@ type Appointment = {
   patients: { id: string; name: string; age: number; gender: string; };
 };
 
-export default function DashboardClient({ appointments, verificationStatus = 'none' }: { appointments: Appointment[], verificationStatus?: string }) {
+type AssignedPatient = {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  contact_info?: string;
+};
+
+export default function DashboardClient({ appointments, assignedPatients = [], verificationStatus = 'none' }: { appointments: Appointment[], assignedPatients?: AssignedPatient[], verificationStatus?: string }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'pending' | 'past'>('pending');
@@ -28,6 +36,10 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
   const pending = appointments.filter(a => a.status === 'scheduled');
   const past = appointments.filter(a => ['completed', 'cancelled'].includes(a.status));
   const currentList = activeTab === 'pending' ? pending : past;
+
+  // Filter out assigned patients who already have appointments
+  const appointmentPatientIds = new Set(appointments.map(a => a.patients?.id));
+  const newAssignedPatients = assignedPatients.filter(p => !appointmentPatientIds.has(p.id));
 
   return (
     <div style={{ backgroundColor: '#f8fafc', color: '#0f172a' }} className="relative min-h-screen font-sans pb-24">
@@ -66,7 +78,7 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
               Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 pb-1">Doctor</span>
             </h1>
             <p className="text-slate-500 font-medium text-lg pt-1">
-              You have <strong className="text-slate-800">{pending.length} scheduled sessions</strong> and <strong className="text-slate-800">{pendingApprovals.length} approvals</strong> waiting.
+              You have <strong className="text-slate-800">{newAssignedPatients.length} assigned patients</strong>, <strong className="text-slate-800">{pending.length} scheduled sessions</strong> and <strong className="text-slate-800">{pendingApprovals.length} approvals</strong> waiting.
             </p>
           </div>
 
@@ -93,6 +105,40 @@ export default function DashboardClient({ appointments, verificationStatus = 'no
           </div>
 
         </div>
+
+        {/* Assigned Patients Section */}
+        {newAssignedPatients.length > 0 && (
+          <div className="mb-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-blue-700">Assigned Patients</h2>
+              <span className="text-xs font-bold text-slate-500">{newAssignedPatients.length} patient{newAssignedPatients.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {newAssignedPatients.map((patient) => (
+                <div key={patient.id} className="bg-white border border-blue-100 rounded-[2rem] p-6 flex items-center justify-between gap-4 hover:shadow-md hover:border-blue-300 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 shrink-0 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                      <Stethoscope className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">{patient.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">{patient.gender}</span>
+                        <span className="text-sm font-semibold text-slate-500">{patient.age} yrs</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => router.push(`/virtual-clinic/${patient.id}`)}
+                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all active:scale-95"
+                  >
+                    <UserPlus className="w-4 h-4" /> Start Session
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {pendingApprovals.length > 0 && (
           <div className="mb-10 space-y-4">

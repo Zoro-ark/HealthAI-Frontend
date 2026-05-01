@@ -144,10 +144,13 @@ export default function AdminDashboard() {
       const selectedDoc = doctors.find(d => d.id === doctorId);
       if (!selectedDoc) throw new Error("Doctor not found");
 
+      // Use user_id if available (matches doctor's dbUser.id), fallback to verification id
+      const assignId = selectedDoc.user_id || selectedDoc.id;
+
       const { error: updateError } = await supabase
         .from('patients')
         .update({
-          assigned_doctor_id: selectedDoc.id,
+          assigned_doctor_id: assignId,
           assigned_doctor_name: selectedDoc.full_name,
         })
         .eq('id', patientId);
@@ -156,7 +159,7 @@ export default function AdminDashboard() {
 
       setPatients(prev => prev.map(p =>
         p.id === patientId
-          ? { ...p, assigned_doctor_id: selectedDoc.id, assigned_doctor_name: selectedDoc.full_name }
+          ? { ...p, assigned_doctor_id: assignId, assigned_doctor_name: selectedDoc.full_name }
           : p
       ));
     } catch (err: unknown) {
