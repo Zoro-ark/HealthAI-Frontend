@@ -10,7 +10,6 @@ function Home() {
   ]
 
   const [heroIndex, setHeroIndex] = useState(0)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -63,13 +62,13 @@ function Home() {
 
               <div className="mt-8 flex gap-4">
                 <Link
-                  href="/signup"
+                  href="/patient-dashboard/new-visit"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-gradient-to-r from-vibrant-blue to-teal-500 hover:brightness-105 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   Get Started
                 </Link>
                 <Link
-                  href="/intake"
+                  href="/patient-dashboard/new-visit"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-vibrant-blue border border-vibrant-blue hover:bg-vibrant-blue/10 transition transform hover:scale-[1.02]"
                 >
                   Fill Medical Form
@@ -156,7 +155,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between">
             <h2 className="text-3xl font-bold text-gray-900">Popular destinations in India</h2>
-            <Link href="/intake" className="text-vibrant-blue font-semibold hover:text-vibrant-orange transition-colors">Plan my trip</Link>
+            <Link href="/patient-dashboard/new-visit" className="text-vibrant-blue font-semibold hover:text-vibrant-orange transition-colors">Plan my trip</Link>
           </div>
           <div className="mt-8 grid md:grid-cols-3 gap-6">
             {[
@@ -183,7 +182,7 @@ function Home() {
             <h3 className="text-2xl md:text-3xl font-bold">Ready to begin your healing journey?</h3>
             <p className="mt-2 text-blue-100">Tell us your needs and we’ll match you with the best options.</p>
             <div className="mt-6">
-              <Link href="/intake" className="inline-flex px-6 py-3 bg-white text-vibrant-blue font-semibold rounded-lg shadow hover:bg-white/90 transition">Fill Medical Profile</Link>
+              <Link href="/patient-dashboard/new-visit" className="inline-flex px-6 py-3 bg-white text-vibrant-blue font-semibold rounded-lg shadow hover:bg-white/90 transition">Fill Medical Profile</Link>
             </div>
           </div>
         </div>

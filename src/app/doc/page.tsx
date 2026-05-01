@@ -33,7 +33,6 @@ export default async function DocPage() {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
   const user = await currentUser()
-  const email = user?.emailAddresses[0]?.emailAddress || ''
 
   // Fetch verification status using user_id mapped from Clerk user
   const { data: dbUser } = await supabase

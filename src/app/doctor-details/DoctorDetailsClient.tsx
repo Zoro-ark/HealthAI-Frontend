@@ -131,7 +131,7 @@ export default function DoctorDetailsClient() {
       const { data: dbUser, error: userError } = await supabase
         .from('users')
         .select('id')
-        .eq('clerk_id', user.id)
+        .eq('clerk_id', user!.id)
         .single();
       
       if (userError || !dbUser) {

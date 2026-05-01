@@ -43,7 +43,6 @@ export default function VirtualClinicClient({
   patient,
   appointments,
   documents,
-<<<<<<< HEAD
   request,
 }: {
   patient: PatientProfile;
@@ -55,14 +54,7 @@ export default function VirtualClinicClient({
     destinations?: string[] | null;
     budget_range?: string | null;
   } | null;
-=======
-  medicalRequests
-}: {
-  patient: Patient,
-  appointments: Appointment[],
-  documents: Document[],
-  medicalRequests: any[]
->>>>>>> origin/admin-integration
+
 }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -75,7 +67,6 @@ export default function VirtualClinicClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
 
-<<<<<<< HEAD
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -97,17 +88,7 @@ export default function VirtualClinicClient({
   const pendingApproval = appointments.find(
     (appointment) => appointment.status === 'pending_doctor'
   );
-=======
-  // States for Notes and Comments
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [clinicalNotes, setClinicalNotes] = useState(() => {
-    if (medicalRequests && medicalRequests.length > 0) {
-      const latestRequest = medicalRequests[0];
-      return `Patient presented with the following recorded symptoms:\n"${latestRequest.symptoms}"\n\nClinical Assessment:`
-    }
-    return "";
-  });
->>>>>>> origin/admin-integration
+
 
   const requestContext = useMemo(() => {
     return {

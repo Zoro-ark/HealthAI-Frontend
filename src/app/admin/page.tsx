@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 interface MedicalRequest {
   symptoms: string;
@@ -24,6 +25,7 @@ interface Patient {
 
 interface DoctorVerification {
   id: string;
+  user_id?: string;
   full_name: string;
   email: string;
   phone: string;
@@ -36,12 +38,23 @@ interface DoctorVerification {
   created_at: string;
 }
 
+interface DoctorFeedback {
+  id: string;
+  doctor_id: string;
+  patient_id: string;
+  rating: number | null;
+  feedback: string;
+  created_at: string;
+  patient_name?: string;
+}
+
 type TabState = 'allocations' | 'verifications';
 type DoctorFilterState = 'pending' | 'verified' | 'rejected';
 
 export default function AdminDashboard() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
+  const supabase = createClient();
 
   const [activeTab, setActiveTab] = useState<TabState>('allocations');
   const [docFilter, setDocFilter] = useState<DoctorFilterState>('pending');
@@ -51,6 +64,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [allocating, setAllocating] = useState<string | null>(null);
+  const [feedbacks, setFeedbacks] = useState<DoctorFeedback[]>([]);
+  const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -61,35 +76,66 @@ export default function AdminDashboard() {
 
     const fetchData = async () => {
       try {
-        const [patientsRes, doctorsRes] = await Promise.all([
-          fetch('http://localhost:5001/api/admin/patients', {
-            headers: { 'Authorization': `Bearer ${user.id}` }
-          }),
-          fetch('http://localhost:5001/api/admin/doctors', {
-            headers: { 'Authorization': `Bearer ${user.id}` }
-          })
-        ]);
+        // Fetch patients with their medical requests
+        const { data: patientsData, error: patientsError } = await supabase
+          .from('patients')
+          .select('*');
 
-        if (!patientsRes.ok) throw new Error('Failed to fetch patients');
-        if (!doctorsRes.ok) throw new Error('Failed to fetch doctors');
+        if (patientsError) throw new Error(patientsError.message);
 
-        const [patientsData, doctorsData] = await Promise.all([
-          patientsRes.json(),
-          doctorsRes.json()
-        ]);
+        // Fetch medical requests for all patients
+        const { data: requestsData } = await supabase
+          .from('medical_requests')
+          .select('patient_id, symptoms, created_at')
+          .order('created_at', { ascending: false });
 
-        setPatients(patientsData);
-        setDoctors(doctorsData);
-      } catch (err: any) {
+        // Merge requests into patients
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const patientsWithRequests = (patientsData || []).map((p: any) => ({
+          ...p,
+          email: p.contact_info || '',
+          budget: p.budget_range || 'N/A',
+          availability_days: p.availability_days || 0,
+          visa_status: p.visa_status || 'N/A',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          medical_requests: (requestsData || []).filter((r: any) => r.patient_id === p.id),
+        }));
+
+        // Fetch doctor verifications
+        const { data: doctorsData, error: doctorsError } = await supabase
+          .from('doctor_verifications')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (doctorsError) throw new Error(doctorsError.message);
+
+        // Fetch doctor feedback
+        const { data: feedbackData } = await supabase
+          .from('doctor_feedback')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        // Enrich feedback with patient names
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const enrichedFeedback = (feedbackData || []).map((fb: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const patient = (patientsData || []).find((p: any) => p.id === fb.patient_id);
+          return { ...fb, patient_name: patient?.name || 'Anonymous' };
+        });
+
+        setPatients(patientsWithRequests);
+        setDoctors(doctorsData || []);
+        setFeedbacks(enrichedFeedback);
+      } catch (err: unknown) {
         console.error("Fetch data error", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [isLoaded, isSignedIn, user, router]);
+  }, [isLoaded, isSignedIn, user, router, supabase]);
 
   const handleAssignDoctor = async (patientId: string, doctorId: string) => {
     if (!doctorId) return;
@@ -98,29 +144,24 @@ export default function AdminDashboard() {
       const selectedDoc = doctors.find(d => d.id === doctorId);
       if (!selectedDoc) throw new Error("Doctor not found");
 
-      const res = await fetch('http://localhost:5001/api/admin/assign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.id}`
-        },
-        body: JSON.stringify({
-          patientId,
-          doctorId: selectedDoc.id,
-          doctorName: selectedDoc.full_name
+      const { error: updateError } = await supabase
+        .from('patients')
+        .update({
+          assigned_doctor_id: selectedDoc.id,
+          assigned_doctor_name: selectedDoc.full_name,
         })
-      });
+        .eq('id', patientId);
 
-      if (!res.ok) throw new Error('Failed to assign doctor');
+      if (updateError) throw new Error(updateError.message);
 
       setPatients(prev => prev.map(p =>
         p.id === patientId
           ? { ...p, assigned_doctor_id: selectedDoc.id, assigned_doctor_name: selectedDoc.full_name }
           : p
       ));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(err.message || 'Error saving assignment');
+      alert(err instanceof Error ? err.message : 'Error saving assignment');
     } finally {
       setAllocating(null);
     }
@@ -128,24 +169,19 @@ export default function AdminDashboard() {
 
   const handleUpdateDoctorStatus = async (doctorId: string, newStatus: 'pending' | 'verified' | 'rejected') => {
     try {
-      const res = await fetch(`http://localhost:5001/api/admin/doctors/${doctorId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.id}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
+      const { error: updateError } = await supabase
+        .from('doctor_verifications')
+        .update({ status: newStatus })
+        .eq('id', doctorId);
 
-      if (!res.ok) throw new Error('Failed to update doctor status');
+      if (updateError) throw new Error(updateError.message);
 
-      // Update UI locally
       setDoctors(prev => prev.map(d =>
         d.id === doctorId ? { ...d, status: newStatus } : d
       ));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(err.message || 'Error updating status');
+      alert(err instanceof Error ? err.message : 'Error updating status');
     }
   };
 
@@ -266,7 +302,7 @@ export default function AdminDashboard() {
                                     <span className="text-xs text-orange-400 font-semibold mb-1 block">
                                       {new Date(req.created_at).toLocaleDateString()}
                                     </span>
-                                    <p className="text-gray-800 line-clamp-3 leading-relaxed">"{req.symptoms}"</p>
+                                    <p className="text-gray-800 line-clamp-3 leading-relaxed">&ldquo;{req.symptoms}&rdquo;</p>
                                   </div>
                                 ))}
                               </div>
@@ -395,6 +431,43 @@ export default function AdminDashboard() {
                         </button>
                       </div>
                     )}
+
+                    {/* Patient Feedback Section */}
+                    {(() => {
+                      const docFeedbacks = feedbacks.filter(fb => fb.doctor_id === doc.user_id || fb.doctor_id === doc.id);
+                      if (docFeedbacks.length === 0) return null;
+                      const avgRating = docFeedbacks.filter(fb => fb.rating).reduce((sum, fb) => sum + (fb.rating || 0), 0) / docFeedbacks.filter(fb => fb.rating).length;
+                      return (
+                        <div className="mt-6 pt-4 border-t border-gray-100">
+                          <button
+                            onClick={() => setExpandedDoc(expandedDoc === doc.id ? null : doc.id)}
+                            className="flex items-center justify-between w-full text-left"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-gray-700">Patient Reviews</span>
+                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                                {avgRating ? `★ ${avgRating.toFixed(1)}` : '—'} · {docFeedbacks.length} review{docFeedbacks.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            <span className="text-gray-400 text-xs">{expandedDoc === doc.id ? '▲ Hide' : '▼ Show'}</span>
+                          </button>
+                          {expandedDoc === doc.id && (
+                            <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                              {docFeedbacks.map(fb => (
+                                <div key={fb.id} className="bg-gray-50 border border-gray-100 rounded-lg p-3 text-sm">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="font-semibold text-gray-800">{fb.patient_name}</span>
+                                    {fb.rating && <span className="text-yellow-600 font-bold text-xs">{'★'.repeat(fb.rating)}{'☆'.repeat(5 - fb.rating)}</span>}
+                                  </div>
+                                  <p className="text-gray-600 leading-relaxed">{fb.feedback}</p>
+                                  <p className="text-gray-400 text-xs mt-1">{new Date(fb.created_at).toLocaleDateString()}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))
               )}

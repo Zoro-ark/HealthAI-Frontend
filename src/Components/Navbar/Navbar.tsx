@@ -71,6 +71,13 @@ export default function Navbar() {
         if (currentRole === 'unknown' && !pathname.includes('/onboarding')) {
           router.push('/onboarding')
         }
+
+        // Auto-redirect from home page to role-specific dashboard
+        if (pathname === '/' && currentRole !== 'unknown') {
+          if (currentRole === 'patient') router.push('/patient-dashboard')
+          else if (currentRole === 'doctor') router.push('/doc')
+          else if (currentRole === 'admin') router.push('/admin')
+        }
       } catch (err) {
         console.error("Supabase sync error:", err)
       }
@@ -129,14 +136,9 @@ export default function Navbar() {
             )}
 
             {role === 'doctor' && (
-              <>
                 <Link href="/doc" className={linkClass('/doc')}>
                   Doctor Portal
                 </Link>
-                <Link href="/reports" className={linkClass('/reports')}>
-                  Reports
-                </Link>
-              </>
             )}
 
             {role === 'admin' && (

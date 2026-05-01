@@ -34,23 +34,14 @@ export default async function VirtualClinicPage({
     .eq('patient_id', id)
     .order('appointment_date', { ascending: false })
 
-  // 3. Fetch patient documents (Now pointing correctly to patient_docs)
+  // 3. Fetch patient documents
   const { data: documents } = await supabase
     .from('patient_docs')
-<<<<<<< HEAD
-=======
     .select('*')
     .eq('patient_id', id)
     .order('created_at', { ascending: false })
 
-  // 4. Fetch the patient's medical requests for AI draft context
-  const { data: medicalRequests } = await supabase
-    .from('medical_requests')
->>>>>>> origin/admin-integration
-    .select('*')
-    .eq('patient_id', id)
-    .order('created_at', { ascending: false })
-
+  // 4. Fetch latest medical request for AI draft context
   const { data: request } = await supabase
     .from('medical_requests')
     .select('*')
@@ -73,7 +64,6 @@ export default async function VirtualClinicPage({
     )
   }
 
-<<<<<<< HEAD
   return (
     <VirtualClinicClient
       patient={patient}
@@ -82,12 +72,4 @@ export default async function VirtualClinicPage({
       request={request || null}
     />
   )
-=======
-  return <VirtualClinicClient 
-            patient={patient} 
-            appointments={appointments || []} 
-            documents={documents || []} 
-            medicalRequests={medicalRequests || []} 
-          />
->>>>>>> origin/admin-integration
 }
