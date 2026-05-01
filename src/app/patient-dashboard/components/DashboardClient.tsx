@@ -382,160 +382,183 @@ export default function DashboardClient() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedVisit(null)}
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40"
             />
             <motion.div
-              initial={{ opacity: 0, x: '100%', scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: '100%', scale: 0.95 }}
+              initial={{ opacity: 0, y: 40, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 overflow-y-auto border-l border-slate-200"
+              className="fixed inset-4 md:inset-8 lg:inset-12 bg-white shadow-2xl z-50 overflow-y-auto rounded-3xl border border-slate-200"
             >
-              <div className="p-6">
-                <button
-                  onClick={() => setSelectedVisit(null)}
-                  className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border mb-4 mt-2 ${getStatusColor(
-                    selectedVisit.status
-                  )}`}
-                >
-                  {selectedVisit.status}
-                </span>
-
-                <h2 className="text-2xl font-bold text-slate-900 mb-1">{selectedVisit.disease}</h2>
-                <div className="text-slate-500 flex items-center gap-2 mb-6">
-                  <Calendar className="w-4 h-4" /> {selectedVisit.date}
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-6 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <Stethoscope className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">
-                        Consulting Doctor
-                      </p>
-                      <p className="font-semibold text-slate-800">{selectedVisit.doctorName}</p>
+              <div className="p-6 md:p-10">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-8">
+                  <div>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border mb-3 ${getStatusColor(
+                        selectedVisit.status
+                      )}`}
+                    >
+                      {selectedVisit.status}
+                    </span>
+                    <h2 className="text-3xl font-bold text-slate-900">{selectedVisit.disease}</h2>
+                    <div className="text-slate-500 flex items-center gap-2 mt-2">
+                      <Calendar className="w-4 h-4" /> {selectedVisit.date}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-emerald-100 p-2 rounded-lg">
-                      <MapPin className="w-5 h-5 text-emerald-600" />
+                  <button
+                    onClick={() => setSelectedVisit(null)}
+                    className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Info Cards Row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="bg-blue-100 p-2 rounded-xl">
+                        <Stethoscope className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <p className="text-xs text-blue-500 font-bold uppercase tracking-wide">Doctor</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">
-                        Location
-                      </p>
-                      <p className="font-semibold text-slate-800">{selectedVisit.location}</p>
+                    <p className="font-bold text-slate-800 text-lg">{selectedVisit.doctorName}</p>
+                  </div>
+                  <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="bg-emerald-100 p-2 rounded-xl">
+                        <MapPin className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <p className="text-xs text-emerald-500 font-bold uppercase tracking-wide">Location</p>
                     </div>
+                    <p className="font-bold text-slate-800 text-lg">{selectedVisit.location}</p>
                   </div>
                   {selectedVisit.estimatedTotalCost && (
-                    <div className="text-sm font-semibold text-slate-700">
-                      Estimated total cost: {selectedVisit.estimatedTotalCost}
+                    <div className="bg-violet-50 rounded-2xl p-5 border border-violet-100">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-violet-100 p-2 rounded-xl">
+                          <Activity className="w-5 h-5 text-violet-600" />
+                        </div>
+                        <p className="text-xs text-violet-500 font-bold uppercase tracking-wide">Estimated Cost</p>
+                      </div>
+                      <p className="font-bold text-slate-800 text-lg">{selectedVisit.estimatedTotalCost}</p>
                     </div>
                   )}
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
-                  <h3 className="text-sm font-black uppercase tracking-[0.18em] text-slate-400 mb-3">
+                {/* Treatment Plan */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 mb-8">
+                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-slate-400 mb-3">
                     Treatment Plan
                   </h3>
-                  <p className="text-sm text-slate-700 leading-relaxed">{selectedVisit.treatmentPlan}</p>
+                  <p className="text-slate-700 leading-relaxed whitespace-pre-line">{selectedVisit.treatmentPlan}</p>
                   {selectedVisit.stay && (
-                    <p className="text-sm text-slate-500 mt-3">Expected stay: {selectedVisit.stay}</p>
+                    <p className="text-sm text-slate-500 mt-4 font-medium">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      Expected stay: {selectedVisit.stay}
+                    </p>
                   )}
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <Activity className="w-5 h-5" /> Day-wise Cost Plan
-                </h3>
-
-                <div className="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-8">
-                  {selectedVisit.itinerary.map((item, index) => (
-                    <div key={index} className="relative pl-6">
-                      <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 shadow-sm bg-white border-blue-500" />
-                      <div>
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <span className="font-bold text-slate-800">Day {item.day}</span>
-                          <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                            {item.cost}
-                          </span>
+                {/* Day-wise Itinerary */}
+                {selectedVisit.itinerary.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                      <Activity className="w-5 h-5" /> Day-wise Itinerary & Cost
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {selectedVisit.itinerary.map((item, index) => (
+                        <div
+                          key={index}
+                          className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-blue-200 transition-all"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                              Day {item.day}
+                            </span>
+                            <span className="text-blue-600 font-bold text-sm bg-blue-50 px-3 py-1 rounded-full">
+                              {item.cost}
+                            </span>
+                          </div>
+                          <p className="text-slate-700 font-medium leading-relaxed">{item.label}</p>
                         </div>
-                        <h4 className="font-semibold text-slate-700 text-[15px] mb-2">{item.label}</h4>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Actions Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Meeting Actions */}
+                  <div>
+                    {selectedVisit.appointmentStatus === 'pending_patient' && (
+                      <button
+                        onClick={approveMeeting}
+                        className="w-full mb-4 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all"
+                      >
+                        Approve Doctor-Proposed Meeting
+                      </button>
+                    )}
+
+                    {!selectedVisit.appointmentId && (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                        <h3 className="text-sm font-black uppercase tracking-[0.15em] text-slate-400 mb-3">
+                          Request a Meeting
+                        </h3>
+                        <input
+                          type="datetime-local"
+                          value={meetingDate}
+                          onChange={(event) => setMeetingDate(event.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 mb-3"
+                        />
+                        <button
+                          onClick={requestMeeting}
+                          className="w-full px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition-all"
+                        >
+                          Request Doctor Approval
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Feedback */}
+                  {selectedVisit.appointmentStatus === 'completed' && (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                      <h3 className="text-sm font-black uppercase tracking-[0.15em] text-slate-400 mb-3">
+                        Feedback For Doctor
+                      </h3>
+                      <select
+                        value={rating}
+                        onChange={(event) => setRating(Number(event.target.value))}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium mb-3"
+                      >
+                        {[5, 4, 3, 2, 1].map((option) => (
+                          <option key={option} value={option}>
+                            {option} Star{option > 1 ? 's' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <textarea
+                        value={feedback}
+                        onChange={(event) => setFeedback(event.target.value)}
+                        placeholder="Share your experience with the doctor."
+                        className="w-full min-h-[100px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium resize-none mb-3"
+                      />
+                      <button
+                        onClick={submitFeedback}
+                        className="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"
+                      >
+                        <MessageSquarePlus className="w-4 h-4" />
+                        Submit Feedback
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {selectedVisit.appointmentStatus === 'pending_patient' && (
-                  <button
-                    onClick={approveMeeting}
-                    className="w-full mb-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold"
-                  >
-                    Approve Doctor-Proposed Meeting
-                  </button>
-                )}
-
-                {!selectedVisit.appointmentId && (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 mb-6">
-                    <h3 className="text-sm font-black uppercase tracking-[0.18em] text-slate-400 mb-3">
-                      Request a Meeting
-                    </h3>
-                    <input
-                      type="datetime-local"
-                      value={meetingDate}
-                      onChange={(event) => setMeetingDate(event.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                    <button
-                      onClick={requestMeeting}
-                      className="mt-3 w-full px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold"
-                    >
-                      Request Doctor Approval
-                    </button>
-                  </div>
-                )}
-
-                {selectedVisit.appointmentStatus === 'completed' && (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 className="text-sm font-black uppercase tracking-[0.18em] text-slate-400 mb-3">
-                      Feedback For Doctor
-                    </h3>
-                    <select
-                      value={rating}
-                      onChange={(event) => setRating(Number(event.target.value))}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium mb-3"
-                    >
-                      {[5, 4, 3, 2, 1].map((option) => (
-                        <option key={option} value={option}>
-                          {option} Star{option > 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <textarea
-                      value={feedback}
-                      onChange={(event) => setFeedback(event.target.value)}
-                      placeholder="Share your experience with the doctor."
-                      className="w-full min-h-[120px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium resize-none"
-                    />
-                    <button
-                      onClick={submitFeedback}
-                      className="mt-3 w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2"
-                    >
-                      <MessageSquarePlus className="w-4 h-4" />
-                      Submit Feedback
-                    </button>
-                  </div>
-                )}
-
                 {actionMessage && (
-                  <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+                  <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm font-medium text-blue-700">
                     {actionMessage}
                   </div>
                 )}
