@@ -101,7 +101,7 @@ IMPORTANT RULES:
 - Do not wrap the JSON in markdown backticks.
   `;
 
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'];
   
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -117,7 +117,7 @@ IMPORTANT RULES:
         return safeJsonArray(parsed.plans, []);
       } catch (err: unknown) {
         const errStr = String(err);
-        if (errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE')) {
+        if (errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('RESOURCE_EXHAUSTED')) {
           // Wait before retry
           await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
           continue;
