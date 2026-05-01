@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Upload, CheckCircle, FileText, User, Building, GraduationCap, ArrowRight, Loader2, Link as LinkIcon, AlertCircle, Clock3, ShieldCheck } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
+import { Upload, CheckCircle, FileText, User, Building, GraduationCap, ArrowRight, Loader2, AlertCircle, Clock3, ShieldCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@clerk/nextjs";
 
 // Framer motion variants
-const containerVariants: any = {
+const containerVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { 
     opacity: 1, 
@@ -20,7 +20,7 @@ const containerVariants: any = {
   }
 };
 
-const itemVariants: any = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
@@ -69,9 +69,9 @@ export default function DoctorDetailsClient() {
         if (error || !data) {
           setCurrentStatus('none');
         } else {
-          setCurrentStatus(data.status as any);
+          setCurrentStatus(data.status as 'pending' | 'verified' | 'rejected');
         }
-      } catch (err) {
+      } catch {
         setCurrentStatus('none');
       }
     };
@@ -140,8 +140,8 @@ export default function DoctorDetailsClient() {
       }
 
       setSubmitSuccess(true);
-    } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }

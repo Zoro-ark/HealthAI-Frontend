@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, FileText, Activity, Calendar, Clock, Download, 
-  Stethoscope, ShieldAlert, Phone, RefreshCw, CheckCircle2 
+import {
+  ArrowLeft, FileText, Activity, Clock, Download,
+  Stethoscope, ShieldAlert, Phone, CheckCircle2
 } from 'lucide-react';
 
 type Patient = {

@@ -10,6 +10,12 @@ interface RoleGuardProps {
     allowedRoles: ("admin" | "patient" | "doctor")[];
 }
 
+type AppRole = RoleGuardProps["allowedRoles"][number];
+
+function isAppRole(role: string): role is AppRole {
+    return role === "admin" || role === "patient" || role === "doctor";
+}
+
 export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
     const { isLoaded, isSignedIn } = useUser();
     const router = useRouter();
@@ -30,7 +36,7 @@ export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
             return;
         }
 
-        if (!allowedRoles.includes(currentRole as any)) {
+        if (!isAppRole(currentRole) || !allowedRoles.includes(currentRole)) {
             // Boot them back to standard visits/home based on their role
             if (currentRole === "doctor") router.push("/doc");
             else router.push("/");

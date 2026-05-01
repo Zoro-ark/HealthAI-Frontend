@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ suggestions: parsedSuggestions.slice(0, 3) });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating suggestions with Gemini:', error);
     return NextResponse.json(
       { error: 'Failed to generate suggestions. Please ensure your API key is correct and valid.' },

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { useUser, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 
 // Interface for the visit data structure
@@ -82,9 +82,9 @@ export default function VisitsPage() {
             const visitsData: Visit[] = await visitsRes.json();
             setVisits(visitsData);
 
-       } catch (err: any) {
+       } catch (err: unknown) {
             console.error(err);
-            setError(err.message || 'An error occurred.');
+            setError(err instanceof Error ? err.message : 'An error occurred.');
             setIsVerified(false); // Assume error means not verified or issue fetching
        } finally {
             setLoading(false);
@@ -138,7 +138,7 @@ export default function VisitsPage() {
       </div>
 
       {visits.length === 0 ? (
-        <p className="text-gray-600">You haven't requested any visits yet.</p>
+        <p className="text-gray-600">You haven&apos;t requested any visits yet.</p>
       ) : (
         <div className="space-y-4">
           {visits.map((visit) => (

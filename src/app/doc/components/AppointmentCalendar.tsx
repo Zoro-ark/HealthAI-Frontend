@@ -5,10 +5,10 @@ import { ChevronLeft, ChevronRight, X, Clock, User, Calendar as CalendarIcon } f
 
 type Appointment = {
   id: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: string;
   appointment_date: string;
   notes: string;
-  patients: { name: string; age: number; gender: string; };
+  patients: { id?: string; name: string; age: number; gender: string; };
 };
 
 export default function AppointmentCalendar({ appointments }: { appointments: Appointment[] }) {

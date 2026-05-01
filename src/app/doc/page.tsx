@@ -22,6 +22,13 @@ type DashboardAppointment = {
   }
 }
 
+type SupabaseAppointment = Omit<DashboardAppointment, 'patients'> & {
+  patients:
+    | DashboardAppointment['patients']
+    | DashboardAppointment['patients'][]
+    | null
+}
+
 export default async function DocPage() {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
@@ -74,9 +81,18 @@ export default async function DocPage() {
     )
   }
 
+  const normalizedAppointments: DashboardAppointment[] = ((appointments || []) as SupabaseAppointment[])
+    .map((appointment) => ({
+      ...appointment,
+      patients: Array.isArray(appointment.patients)
+        ? appointment.patients[0]
+        : appointment.patients,
+    }))
+    .filter((appointment): appointment is DashboardAppointment => Boolean(appointment.patients))
+
   return (
     <DashboardClient
-      appointments={(appointments || []) as DashboardAppointment[]}
+      appointments={normalizedAppointments}
       verificationStatus={verificationStatus}
     />
   )

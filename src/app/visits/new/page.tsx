@@ -136,9 +136,9 @@ export default function NewVisitPage() {
       // Redirect to visits page upon successful submission
       router.push('/visits');
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'An error occurred during submission.');
+      setError(err instanceof Error ? err.message : 'An error occurred during submission.');
     } finally {
       setLoading(false);
     }

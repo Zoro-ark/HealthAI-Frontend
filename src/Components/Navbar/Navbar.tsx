@@ -45,7 +45,7 @@ export default function Navbar() {
         const { data: existingUser, error: checkError } = await supabase
           .from('users')
           .select('role')
-          .eq('id', user.id)
+          .eq('clerk_id', user.id)
           .single()
 
         let currentRole = 'unknown'
@@ -53,9 +53,9 @@ export default function Navbar() {
         if (checkError && checkError.code === 'PGRST116') {
           // User not found, insert them
           const { error: insertError } = await supabase.from('users').insert({
-            id: user.id,
+            clerk_id: user.id,
             email: user.emailAddresses[0]?.emailAddress || '',
-            full_name: user.fullName || "New User",
+            name: user.fullName || "New User",
             role: 'unknown'
           })
           if (insertError) throw insertError;
@@ -78,6 +78,20 @@ export default function Navbar() {
 
     syncUser()
   }, [isSignedIn, user, isLoaded, synced, pathname, router])
+
+  useEffect(() => {
+    const syncRoleFromStorage = () => {
+      const storedRole = localStorage.getItem('role')
+      if (storedRole) setRole(storedRole)
+    }
+
+    window.addEventListener('storage', syncRoleFromStorage)
+    window.addEventListener('focus', syncRoleFromStorage)
+    return () => {
+      window.removeEventListener('storage', syncRoleFromStorage)
+      window.removeEventListener('focus', syncRoleFromStorage)
+    }
+  }, [])
 
   const linkClass = (path: string) =>
     `transition-all font-bold text-sm px-4 py-2 rounded-xl flex items-center gap-2 ${ 

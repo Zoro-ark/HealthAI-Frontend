@@ -15,7 +15,7 @@ export default async function DummyPage() {
       <div className="p-8 text-red-600">
         <h1 className="text-2xl font-bold mb-4text-red-600">Error Fetching Data</h1>
         <p>{error.message}</p>
-        <p className="text-sm mt-2">Make sure RLS policies allow reading from this table!</p>
+        <p className="text-sm mt-2">Make sure RLS policies allow reading from this table.</p>
       </div>
     )
   }
@@ -33,7 +33,7 @@ export default async function DummyPage() {
           </div>
         </div>
       ) : (
-        <p className="text-gray-500 italic">No data found in the 'Dummy' table.</p>
+        <p className="text-gray-500 italic">No data found in the Dummy table.</p>
       )}
     </div>
   )

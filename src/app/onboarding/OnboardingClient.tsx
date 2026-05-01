@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { User, Activity, ArrowRight, Loader2 } from "lucide-react";
 
@@ -11,30 +10,43 @@ export default function OnboardingClient() {
     const { user, isLoaded, isSignedIn } = useUser();
     const router = useRouter();
     const [isUpdating, setIsUpdating] = useState(false);
-    const supabase = createClient();
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleRoleSelection = async (role: "patient" | "doctor") => {
         if (!user) return;
         setIsUpdating(true);
+        setErrorMsg("");
         try {
-            const { error } = await supabase
-                .from('users')
-                .update({ role })
-                .eq('id', user.id);
+            const response = await fetch("/api/users/set-role", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: user.id,
+                    email: user.emailAddresses[0]?.emailAddress || "",
+                    fullName: user.fullName || user.username || "New User",
+                    role,
+                }),
+            });
 
-            if (error) throw error;
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Could not save your role. Please try again.");
+            }
 
             localStorage.setItem('role', role);
+            window.dispatchEvent(new StorageEvent("storage", { key: "role", newValue: role }));
             
             // Redirect based on role selection. Doctor might need to verify next.
             if (role === 'doctor') {
                 router.push('/doctor-details');
             } else {
-                router.push('/');
+                router.push('/patient-dashboard');
             }
 
-        } catch (err) {
+        } catch (err: unknown) {
             console.error("Error setting role:", err);
+            setErrorMsg(err instanceof Error ? err.message : "Could not save your role. Please try again.");
             setIsUpdating(false);
         }
     };
@@ -59,6 +71,11 @@ export default function OnboardingClient() {
                     <p className="text-lg text-slate-500 font-medium max-w-xl mx-auto">
                         Please tell us how you plan to use the MedicoTourism platform so we can personalize your experience.
                     </p>
+                    {errorMsg && (
+                        <p className="mt-4 text-sm font-semibold text-red-600 bg-red-50 border border-red-100 rounded-2xl px-4 py-3 max-w-xl mx-auto">
+                            {errorMsg}
+                        </p>
+                    )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">

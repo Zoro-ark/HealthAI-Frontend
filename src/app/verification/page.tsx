@@ -63,9 +63,9 @@ export default function VerificationPage() {
       // Redirect to visits page upon successful verification
       router.push('/visits');
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'An error occurred during verification.');
+      setError(err instanceof Error ? err.message : 'An error occurred during verification.');
     } finally {
       setLoading(false);
     }
