@@ -20,11 +20,9 @@ export async function POST(request: Request) {
       .insert({
         patient_id: patientId,
         doctor_id: doctorId || DUMMY_DOCTOR_ID,
-        itinerary_id: itineraryId || null,
         appointment_date: appointmentDate,
         status: 'pending_doctor',
-        notes: 'Patient requested a follow-up meeting from the itinerary page.',
-        created_by: 'patient',
+        notes: 'Patient requested a follow-up meeting.',
       })
       .select('*')
       .single();

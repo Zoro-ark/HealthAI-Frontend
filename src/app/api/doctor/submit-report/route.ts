@@ -201,9 +201,8 @@ export async function POST(request: Request) {
         patient_id: patient.id,
         doctor_id: activeDoctorId,
         appointment_date: meetingDate,
-        status: 'pending_patient',
+        status: 'pending_doctor',
         notes: 'Doctor-proposed follow-up after report submission.',
-        created_by: 'doctor',
       });
 
       if (appointmentError) {
